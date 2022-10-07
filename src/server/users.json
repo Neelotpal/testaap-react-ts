@@ -1,1 +1,22 @@
-{"users":[{"id":1,"name":"test1","email":"testemail1@gmail.com","password":"test1","access_token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RlbWFpbDFAZ21haWwuY29tIiwicGFzc3dvcmQiOiJ0ZXN0MSIsImlhdCI6MTY2NTE2ODU3MSwiZXhwIjoxNjY1MTcyMTcxfQ.MGstQ0J-eNetcCfNGF9TBxY3GBda0xU3nX7AnqwvEkg"},{"id":2,"name":"test2","email":"testemail2@gmail.com","password":"test2"},{"name":"test3","email":"testemail3@gmail.com","password":"test3","id":3}]}
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "test1",
+      "email": "testemail1@gmail.com",
+      "password": "test1"
+    },
+    {
+      "id": 2,
+      "name": "test2",
+      "email": "testemail2@gmail.com",
+      "password": "test2"
+    },
+    {
+      "name": "test3",
+      "email": "testemail3@gmail.com",
+      "password": "test3",
+      "id": 3
+    }
+  ]
+}

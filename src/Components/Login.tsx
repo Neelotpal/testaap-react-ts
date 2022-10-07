@@ -26,6 +26,16 @@ const Login = () => {
                         token: response.data.access_token,
                     })
                 );
+                if (loginData.rememberMe) {
+                    /*fix security*/
+                    localStorage.setItem(
+                        "credentials",
+                        JSON.stringify({
+                            userName: loginData.userName,
+                            password: loginData.passWd
+                        })
+                    );
+                }
                 setInvalidLogin(false);
                 navigate("/dashboard");
             })
@@ -47,7 +57,8 @@ const Login = () => {
 
 export interface LoginData {
     userName: string | null,
-    passWd: string | null
+    passWd: string | null,
+    rememberMe: boolean
 }
 
 export default Login;

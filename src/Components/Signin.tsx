@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, FormControlLabel, Grid, Link } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -13,11 +13,22 @@ import { LoginData } from './Login';
 const theme = createTheme();
 
 export default function SignIn(props: SignInPropsInterface) {
-  const [isEmailError, setIsEmailError] = useState(false),
+  const [storedEmail, setStoredEmail] = useState(""),
+    [storedPassword, setStoredPassword] = useState(""),
+    [isEmailError, setIsEmailError] = useState(false),
     [isPasswordError, setIsPasswordError] = useState(false),
     [emailErrorText, setEmailErrorText] = useState(""),
     [passwordErrorText, setPasswordErrorText] = useState(""),
-    [showLoginError, setShowLoginError] = useState(false);
+    [showLoginError, setShowLoginError] = useState(false),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    const credentials = localStorage.getItem("credentials");
+    const fromLocalStorage = JSON.parse(credentials || '{}');
+    setStoredEmail(fromLocalStorage.userName);
+    setStoredPassword(fromLocalStorage.password);
+  }, []);
 
   const validate = ({ userName, passWd }: LoginData) => {
     if (userName === "") {
@@ -40,14 +51,11 @@ export default function SignIn(props: SignInPropsInterface) {
     event.preventDefault();
     setShowLoginError(true)
     const data = new FormData(event.currentTarget);
-    console.log({
-      email: data.get('email'),
-      password: data.get('password'),
-    });
     const loginData: LoginData = {
       userName: data.get('email')?.toString() ?? "",
       passWd: data.get('password')?.toString() ?? "",
-    }
+      rememberMe: rememberMe
+    };
 
     if (validate(loginData)) {
       props.loginClicked(loginData);
@@ -86,6 +94,7 @@ export default function SignIn(props: SignInPropsInterface) {
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
             <TextField
               margin="normal"
+              defaultValue={storedEmail}
               required
               fullWidth
               id="email"
@@ -99,6 +108,7 @@ export default function SignIn(props: SignInPropsInterface) {
             />
             <TextField
               margin="normal"
+              defaultValue={storedPassword}
               required
               fullWidth
               name="password"
@@ -111,8 +121,10 @@ export default function SignIn(props: SignInPropsInterface) {
               onFocus={onFocus}
             />
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={<Checkbox color="primary" />}
+              value={rememberMe}
               label="Remember me"
+              onChange={(e, checked) => setRememberMe(checked)}
             />
             {props.invalidLogin && showLoginError && (<Alert severity="error">Invalid login credentials!</Alert>)}
             <Button
