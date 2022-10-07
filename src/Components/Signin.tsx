@@ -1,5 +1,5 @@
-import * as React from 'react';
-import { FormControlLabel, Grid, Link } from '@mui/material';
+import React, { useState } from 'react';
+import { Alert, FormControlLabel, Grid, Link } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -13,8 +13,32 @@ import { LoginData } from './Login';
 const theme = createTheme();
 
 export default function SignIn(props: SignInPropsInterface) {
+  const [isEmailError, setIsEmailError] = useState(false),
+    [isPasswordError, setIsPasswordError] = useState(false),
+    [emailErrorText, setEmailErrorText] = useState(""),
+    [passwordErrorText, setPasswordErrorText] = useState(""),
+    [showLoginError, setShowLoginError] = useState(false);
+
+  const validate = ({ userName, passWd }: LoginData) => {
+    if (userName === "") {
+      setIsEmailError(true);
+      setEmailErrorText("Email is required");
+      return false;
+    }
+
+    if (passWd === "") {
+      setIsPasswordError(true);
+      setPasswordErrorText("Password is required");
+      return false;
+    }
+
+    return true;
+  }
+
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setShowLoginError(true)
     const data = new FormData(event.currentTarget);
     console.log({
       email: data.get('email'),
@@ -24,8 +48,23 @@ export default function SignIn(props: SignInPropsInterface) {
       userName: data.get('email')?.toString() ?? "",
       passWd: data.get('password')?.toString() ?? "",
     }
-    props.loginClicked(loginData);
+
+    if (validate(loginData)) {
+      props.loginClicked(loginData);
+    }
   };
+
+  const onFocus = () => {
+    setShowLoginError(false);
+    setIsEmailError(false);
+    setIsPasswordError(false);
+  };
+
+
+
+
+
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -54,6 +93,9 @@ export default function SignIn(props: SignInPropsInterface) {
               name="email"
               autoComplete="email"
               autoFocus
+              error={isEmailError}
+              helperText={emailErrorText}
+              onFocus={onFocus}
             />
             <TextField
               margin="normal"
@@ -64,11 +106,15 @@ export default function SignIn(props: SignInPropsInterface) {
               type="password"
               id="password"
               autoComplete="current-password"
+              error={isPasswordError}
+              helperText={passwordErrorText}
+              onFocus={onFocus}
             />
             <FormControlLabel
               control={<Checkbox value="remember" color="primary" />}
               label="Remember me"
             />
+            {props.invalidLogin && showLoginError && (<Alert severity="error">Invalid login credentials!</Alert>)}
             <Button
               type="submit"
               fullWidth
@@ -97,5 +143,6 @@ export default function SignIn(props: SignInPropsInterface) {
 }
 
 export interface SignInPropsInterface {
-  loginClicked:  (loginData: LoginData) => void;
+  loginClicked: (loginData: LoginData) => void;
+  invalidLogin: boolean;
 }

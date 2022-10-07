@@ -18,11 +18,35 @@ const SECRET_KEY = "72676376";
 const expiresIn = "1h";
 
 function createToken(payload) {
-  return jwt.sign(payload, SECRET_KEY, { expiresIn });
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn });
+  fs.readFile(`${__dirname}\\users.json`, (err, data) => {
+    if (err) {
+      const status = 401;
+      const message = err;
+
+      console.log("there is an error", err);
+      res.status(status).json({ status, message });
+      return;
+    }
+    data = JSON.parse(data.toString());
+
+    let user = data.users.find((user) => user.email === payload.email);
+    user.access_token = token;
+
+    fs.writeFile(
+      `${__dirname}\\users.json`,
+      JSON.stringify(data),
+      (err, data) => {
+        if (err) {
+          console.log("error writing token to file");
+        }
+      }
+    );
+  });
+  return token;
 }
 
 function isLoginAuthenticated({ email, password }) {
-  console.log("finding: ", email, password);
   return (
     userdb.users.findIndex(
       (user) => user.email === email && user.password === password
@@ -30,61 +54,33 @@ function isLoginAuthenticated({ email, password }) {
   );
 }
 
-function isRegisterAuthenticated({ email }) {
-  return userdb.users.findIndex((user) => user.email === email) !== -1;
+function isLoggedInUserAuthenticated({ email, token }) {
+  let user = userdb.users.findIndex((user) => user.email === email) !== -1;
+  return user.access_token === token;
 }
 
-server.get("/users", (req, res) => {
+server.post("/api/auth/users", (req, res) => {
   let users;
-  fs.readFile("./users.json", (err, data) => {
-    if (err) {
-      const status = 401;
-      const message = err;
-      res.status(status).json({ status, message });
-      return;
-    }
-    users = JSON.parse(data.toString());
-  });
+  const { email, token } = req.body;
 
-  res.status(200).json(users);
-});
-
-server.post("/api/auth/register", (req, res) => {
-  const { email, password } = req.body;
-  if (isRegisterAuthenticated({ email })) {
+  if (isLoggedInUserAuthenticated({ email, token })) {
     const status = 401;
-    const message = "Email already exist";
+    const message = "Invalid login";
     res.status(status).json({ status, message });
     return;
   }
 
-  fs.readFile("./users.json", (err, data) => {
+  fs.readFile(`${__dirname}\\users.json`, "utf-8", (err, data) => {
     if (err) {
       const status = 401;
       const message = err;
+      console.log("there is an error in reading file", err);
       res.status(status).json({ status, message });
       return;
     }
-    data = JSON.parse(data.toString());
-
-    let last_item_id = data.users[data.users.length - 1].id;
-
-    data.users.push({ id: last_item_id + 1, email: email, password: password });
-    let writeData = fs.writeFile(
-      "./users.json",
-      JSON.stringify(data),
-      (err, result) => {
-        if (err) {
-          const status = 401;
-          const message = err;
-          res.status(status).json({ status, message });
-          return;
-        }
-      }
-    );
+    users = JSON.parse(data.toString());
+    res.status(200).json(users);
   });
-  const access_token = createToken({ email, password });
-  res.status(200).json({ access_token });
 });
 
 server.post("/api/auth/login", (req, res) => {
@@ -97,6 +93,7 @@ server.post("/api/auth/login", (req, res) => {
     return;
   }
   const access_token = createToken({ email, password });
+
   res.status(200).json({ access_token });
 });
 

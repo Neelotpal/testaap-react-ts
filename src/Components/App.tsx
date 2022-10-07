@@ -5,13 +5,14 @@ import {
   Route,
 } from "react-router-dom";
 import Login from "./Login";
+import Dashboard from './Dashboard';
 
 
 const App = () => (
   <BrowserRouter>
     <Routes>
       <Route path="/" element={<Login />} />
-      {/* <Route path="users/*" element={<Users />} /> */}
+      <Route path="/dashboard" element={<Dashboard />} />
     </Routes>
   </BrowserRouter>
 
